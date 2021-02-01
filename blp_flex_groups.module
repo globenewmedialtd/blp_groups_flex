@@ -187,4 +187,36 @@ function blp_flex_groups_form_alter(&$form, FormStateInterface $form_state, $for
 
 }
 
+/**
+ * Provide a method to alter the allowed content visibility for a group type.
+ *
+ * @param array $visibilities
+ *   The visibilities list.
+ * @param string $group_type_id
+ *   The group type we alter the visibility setting for.
+ *
+ * @see social_group_get_allowed_visibility_options_per_group_type()
+ *
+ * @ingroup social_group_api
+ */
+function blp_flex_groups_social_group_allowed_visibilities_alter(array &$visibilities, $group_type_id) {
+  
+  $flexible_group_types = blp_flex_groups_get_flexible_group_types();
+  // Remove the default flexible_group
+  unset($flexible_group_types['flexible_group']);
+
+  if (in_array($group_type_id,$flexible_group_types)) {
+
+    $group = _social_group_get_current_group();
+
+    if ($group !== NULL) {
+      // Try to retrieve allowed options from Group directly.
+      $allowed_options = $group->get('field_group_allowed_visibility')->getValue();
+      foreach ($allowed_options as $option) {
+        $value = $option['value'];
+        $visibilities[$value] = TRUE;
+      }
+    }
+  }
+}
 
